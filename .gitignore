@@ -1,0 +1,8 @@
+.hid_env/
+checkpoints/
+*__pycache__/
+gallery/
+outputs/
+/probe_phase1
+fold.txt
+*.pdf
