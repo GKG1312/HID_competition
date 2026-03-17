@@ -382,7 +382,7 @@ class GaitBase(nn.Module):
 def train(model, dataloader, optimizer, loss_aggregator, device, epoch):
     model.train()
     total_loss = 0
-    scaler = torch.amp.GradScaler('cuda')
+    # scaler = torch.amp.GradScaler('cuda')
     for batch_idx, (sils, labels, _, seq_lengths) in enumerate(dataloader):
         sils, labels, seq_lengths = sils.to(device), labels.to(device), seq_lengths.to(device)
         # print(f"Batch {batch_idx}: sils shape {sils.shape}, seq_lengths {seq_lengths}, sils dtype {sils.dtype}, max_seq_len 60")  DEBUG
@@ -390,12 +390,15 @@ def train(model, dataloader, optimizer, loss_aggregator, device, epoch):
             raise ValueError(f"seq_lengths {seq_lengths} exceed max_seq_len 60")
         inputs = ([sils], labels, None, None, [seq_lengths])
         optimizer.zero_grad()
-        with torch.amp.autocast('cuda'):
-            outputs = model(inputs)
-            loss_sum, loss_info = loss_aggregator(outputs['training_feat'])
-        scaler.scale(loss_sum).backward()
-        scaler.step(optimizer)
-        scaler.update()
+        # with torch.amp.autocast('cuda'):
+        outputs = model(inputs)
+        loss_sum, loss_info = loss_aggregator(outputs['training_feat'])
+        # scaler.scale(loss_sum).backward()
+        # scaler.step(optimizer)
+        # scaler.update()
+        loss_sum.backward()
+        optimizer.step()
+
         total_loss += loss_sum.item()
         if batch_idx % 10 == 0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss_sum.item():.4f}, {loss_info}")
@@ -406,16 +409,17 @@ def main():
     # Configuration
     dataset_root = r"D:\personalProject\hid_project\gallery"
     partition_file = r"code\gaitbase\HID.json"
-    checkpoint_path = r"D:\personalProject\OpenGait\output\HID\Baseline\Baseline\checkpoints\Baseline-60000.pt"
+    # checkpoint_path = r"D:\personalProject\OpenGait\output\HID\Baseline\Baseline\checkpoints\Baseline-60000.pt"
+    checkpoint_path = r"output\HID\Baseline_HID_finetuned\Baseline_HID_finetuned-5000_last.pt"
     output_dir = r"output\HID\Baseline_HID_finetuned"
     loss_cfg = [
         {'type': 'Triplet', 'log_prefix': 'triplet', 'margin': 0.2, 'loss_term_weight': 1.0},
         {'type': 'CrossEntropy', 'log_prefix': 'softmax', 'scale': 16, 'label_smooth': True, 'eps': 0.1, 'loss_term_weight': 0.1}
     ]
-    lr = 0.01
+    lr = 0.001
     total_epochs = 50
-    batch_size = 8
-    save_iter = 10
+    batch_size = 16
+    save_iter = 5
 
     # Verify number of classes
     def verify_classes(dataset_root, partition_file):

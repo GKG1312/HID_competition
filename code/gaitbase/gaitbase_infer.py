@@ -357,8 +357,8 @@ def infer(model, dataloader, device, output_csv):
             predicted_classes = torch.argmax(logits, dim=1).cpu().numpy()  # Shape: [batch]
             for video_id, pred_class in zip(video_ids, predicted_classes):
                 results.append({
-                    'videoID': video_id,
-                    'predicted_class': int(pred_class)
+                    'videoID': os.path.splitext(video_id)[0],
+                    'label': int(pred_class)
                 })
     
     df = pd.DataFrame(results)
@@ -368,8 +368,8 @@ def infer(model, dataloader, device, output_csv):
 # Main
 def main():
     # Configuration
-    dataset_root = r"D:\personalProject\hid_project\probe_phase1"
-    checkpoint_path = r"output\HID\Baseline_HID_finetuned\Baseline_HID_finetuned-50.pt"
+    dataset_root = r"D:\personalProject\hid_project\probe_phase2"
+    checkpoint_path = r"output\HID\Baseline_HID_finetuned\Baseline_HID_finetuned-5000.pt"
     output_csv = r"output\HID\Baseline_HID_finetuned\submission.csv"
     model_cfg = {
         'model': 'Baseline',

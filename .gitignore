@@ -5,6 +5,9 @@ gallery/
 outputs/
 output/
 submission*
-/probe_phase1
+/probe_phase*
 fold.txt
 *.pdf
+
+*.7z
+*.zip
